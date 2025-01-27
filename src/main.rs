@@ -17,7 +17,6 @@ fn main() -> Result<()> {
         .chain(std::iter::once(0))
         .collect();
 
-    // Create the file
     let h_file = unsafe {
         CreateFileW(
             PCWSTR(file_name.as_ptr()),
@@ -30,10 +29,8 @@ fn main() -> Result<()> {
         )?
     };
 
-    // The content to write to the file (wide string, UTF-16 encoded)
     let content = "Hello, world!";
 
-    // Write the content to the file
     let mut bytes_written = 0;
     unsafe {
         WriteFile(
@@ -44,12 +41,10 @@ fn main() -> Result<()> {
         )?;
     }
 
-    // Close the file handle
     unsafe {
         let _ = CloseHandle(h_file);
     }
 
     println!("File created and written successfully!");
-
     Ok(())
 }
