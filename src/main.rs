@@ -1,50 +1,26 @@
-use std::{ffi::OsStr, os::windows::ffi::OsStrExt};
+use windows::core::Result;
 
-use windows::{
-    core::{Result, PCWSTR},
-    Win32::{
-        Foundation::CloseHandle,
-        Storage::FileSystem::{
-            CreateFileW, WriteFile, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, FILE_GENERIC_WRITE,
-            FILE_SHARE_READ,
-        },
-    },
-};
+pub mod fs;
+pub mod rsa;
 
 fn main() -> Result<()> {
-    let file_name: Vec<u16> = OsStr::new("example.txt")
-        .encode_wide()
-        .chain(std::iter::once(0))
-        .collect();
+    let (h_key, pub_key, priv_key) = rsa::generate_rsa_keypair(2048)?;
+    println!("Public key: {:?}", pub_key);
+    println!("Private key: {:?}", priv_key);
 
-    let h_file = unsafe {
-        CreateFileW(
-            PCWSTR(file_name.as_ptr()),
-            FILE_GENERIC_WRITE.0,
-            FILE_SHARE_READ,
-            None,
-            CREATE_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL,
-            None,
-        )?
-    };
+    let input = "!dlrow ,olleH";
 
-    let content = "Hello, world!";
+    // Encrypt
+    let ed = rsa::encrypt(h_key, input.as_bytes(), 2048)?;
+    // Write
+    fs::cw_file("encrypted.txt", &ed)?;
+    // Read
+    let file_cnt = fs::r_file("encrypted.txt")?;
+    // Decrypt
+    let dd = rsa::decrypt(h_key, &file_cnt)?;
 
-    let mut bytes_written = 0;
-    unsafe {
-        WriteFile(
-            h_file,
-            Some(content.as_bytes()),
-            Some(&mut bytes_written),
-            None,
-        )?;
-    }
+    println!("{:?}", input);
+    println!("{:?}", String::from_utf8(dd)?);
 
-    unsafe {
-        let _ = CloseHandle(h_file);
-    }
-
-    println!("File created and written successfully!");
     Ok(())
 }

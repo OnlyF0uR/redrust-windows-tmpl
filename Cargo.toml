@@ -10,4 +10,10 @@ panic = "abort"
 opt-level = "z"
 
 [dependencies]
-windows = { version = "0.59.0", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_Security"] }
+windows = { version = "0.59.0", features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_System_IO",
+    "Win32_Security",
+    "Win32_Security_Cryptography",
+] }
